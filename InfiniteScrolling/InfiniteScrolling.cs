@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace InfiniteScrolling
 {
-    public class CustomABC : GridEX
+    public class InfiniteScrolling : GridEX
     {
         private int previousFirstDisplayedScrollingRowIndex = 0;
         private int totalRow;

@@ -30,7 +30,7 @@
         {
             Janus.Windows.GridEX.GridEXLayout gridEXLayout1 = new Janus.Windows.GridEX.GridEXLayout();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(InfiniteScrollingDialog));
-            this.gridNote = new CustomABC();
+            this.gridNote = new InfiniteScrolling();
             ((System.ComponentModel.ISupportInitialize)(this.gridNote)).BeginInit();
             this.SuspendLayout();
             // 
@@ -62,7 +62,7 @@
 
         #endregion
 
-        private CustomABC gridNote;
+        private InfiniteScrolling gridNote;
     }
 }
 

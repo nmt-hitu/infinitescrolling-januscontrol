@@ -8,10 +8,6 @@ namespace InfiniteScrolling
     public partial class InfiniteScrollingDialog : Form
     {
         SqlConnection connection = new SqlConnection("Data Source=172.16.1.30;Initial Catalog=BOSS_Development;User Id=boss_dev; Password=GoodDev!");
-        DataTable dataTable = new DataTable();
-        DataSet dataSet;
-        SqlDataAdapter sqlDataAdapter;
-
         public InfiniteScrollingDialog()
         {
             InitializeComponent();
@@ -60,28 +56,5 @@ namespace InfiniteScrolling
                 MoreRowsCount = 10
             };
         }
-
-        /*
-        private void GridNote_Scroll(object sender, EventArgs e)
-        {
-            if (this.gridNote.VerticalScrollPosition > this.previousFirstDisplayedScrollingRowIndex
-                && this.gridNote.LastVisibleRow(true) == this.gridNote.RowCount - 1)
-            {
-                //Load more
-                DataTable newData = new DataTable();
-
-                int latestStartRow = (startNow * endRow) + 1;
-                int latestEndRow = (startNow + 1) * endRow;
-
-                newData = GetDataFromTo(latestStartRow, latestEndRow);
-                dataTable.Merge(newData);
-                this.gridNote.DataSource = dataTable;
-                this.gridNote.VerticalScrollPosition = latestStartRow;
-                this.previousFirstDisplayedScrollingRowIndex = this.gridNote.VerticalScrollPosition;
-
-                startNow++;
-            }
-        }
-        */
     }
 }
