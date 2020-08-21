@@ -30,7 +30,7 @@
         {
             Janus.Windows.GridEX.GridEXLayout gridEXLayout1 = new Janus.Windows.GridEX.GridEXLayout();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(InfiniteScrollingDialog));
-            this.gridNote = new Janus.Windows.GridEX.GridEX();
+            this.gridNote = new CustomABC();
             ((System.ComponentModel.ISupportInitialize)(this.gridNote)).BeginInit();
             this.SuspendLayout();
             // 
@@ -44,7 +44,6 @@
             this.gridNote.ScrollBars = Janus.Windows.GridEX.ScrollBars.Vertical;
             this.gridNote.Size = new System.Drawing.Size(803, 322);
             this.gridNote.TabIndex = 0;
-            this.gridNote.Scroll += new System.EventHandler(this.GridNote_Scroll);
             // 
             // InfiniteScrollingDialog
             // 
@@ -63,7 +62,7 @@
 
         #endregion
 
-        private Janus.Windows.GridEX.GridEX gridNote;
+        private CustomABC gridNote;
     }
 }
 

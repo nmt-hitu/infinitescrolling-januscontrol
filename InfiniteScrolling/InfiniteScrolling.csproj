@@ -78,6 +78,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CustomABC.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="InfiniteScrollingDialog.cs">
       <SubType>Form</SubType>
     </Compile>

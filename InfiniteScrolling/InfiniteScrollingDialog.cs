@@ -12,48 +12,56 @@ namespace InfiniteScrolling
         DataSet dataSet;
         SqlDataAdapter sqlDataAdapter;
 
-        int startNow = 1;
-        int endRow = 100;
-        int previousFirstDisplayedScrollingRowIndex = 0;
-
         public InfiniteScrollingDialog()
         {
             InitializeComponent();
         }
 
-        public void LoadDataView()
+        public virtual DataTable LoadMoreRows(int startRow, int endRow, ref string commandStr)
         {
-            dataTable = GetDataFromTo(startNow, endRow);
-            this.gridNote.DataSource = dataTable;
-        }
+            DataTable resultDB = new DataTable();
 
-        private DataTable GetDataFromTo(int startRow, int endRow)
-        {
-            string commandString = @"SELECT ROW_NUMBER() OVER(ORDER BY N.CreatedDate DESC) AS RowIndex, N.Note, N.CreatedDate
-	                                INTO #TMPthi
-		                                FROM Note n (NOLOCK)
-	                                WHERE n.CreatedDate >= '1/1/2020'
-	                                ORDER BY n.CreatedDate DESC
+            commandStr = "GetNoteList_TEST";
 
-	                                SELECT *
-	                                FROM #TMP T
-	                                WHERE T.RowIndex >= {0} AND T.RowIndex <= {1}
-                                    
-                                    DROP TABLE #TMP";
+            using (SqlConnection sqlConnection = new SqlConnection(connection.ConnectionString.ToString()))
+            {
+                using (SqlCommand sqlCommand = new SqlCommand(commandStr, sqlConnection))
+                {
+                    sqlCommand.CommandType = CommandType.StoredProcedure;
 
-            commandString = string.Format(commandString, startRow, endRow);
+                    sqlCommand.Parameters.Add("@StartRow", SqlDbType.Int).Value = startRow;
+                    sqlCommand.Parameters.Add("@EndRow", SqlDbType.Int).Value = endRow;
 
-            sqlDataAdapter = new SqlDataAdapter(commandString, connection);
-            dataSet = new DataSet();
-            sqlDataAdapter.Fill(dataSet);
-             
-            return dataSet.Tables[0];
+                    SqlDataAdapter sqlDataAdapter = new SqlDataAdapter(sqlCommand);
+                    DataSet dataSet = new DataSet();
+                    sqlDataAdapter.Fill(dataSet);
+
+                    if (dataSet != null && dataSet.Tables.Count > 0)
+                    {
+                        resultDB = dataSet.Tables[0];
+                    }
+                }
+            }
+
+            return resultDB;
         }
 
         private void InfiniteScrollingDialog_Load(object sender, EventArgs e)
         {
-            LoadDataView();
+            string commandStr = string.Empty;
+
+            this.gridNote.DataSource = LoadMoreRows(1, 20, ref commandStr);
+
+            //Configures to get more data
+            this.gridNote.InfiniteScrollingConfigs = new InfiniteScrollingConfigs
+            {
+                StoreProcedure = commandStr,
+                ConnetionString = connection.ConnectionString.ToString(),
+                MoreRowsCount = 10
+            };
         }
+
+        /*
         private void GridNote_Scroll(object sender, EventArgs e)
         {
             if (this.gridNote.VerticalScrollPosition > this.previousFirstDisplayedScrollingRowIndex
@@ -74,5 +82,6 @@ namespace InfiniteScrolling
                 startNow++;
             }
         }
+        */
     }
 }
