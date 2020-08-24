@@ -8,12 +8,14 @@ namespace InfiniteScrolling
     public partial class InfiniteScrollingDialog : Form
     {
         SqlConnection connection = new SqlConnection("Data Source=172.16.1.30;Initial Catalog=BOSS_Development;User Id=boss_dev; Password=GoodDev!");
+        int ThresholdRows = 300; //It should get from config file
+        
         public InfiniteScrollingDialog()
         {
             InitializeComponent();
         }
 
-        public virtual DataTable LoadMoreRows(int startRow, int endRow, ref string commandStr)
+        public virtual DataTable LoadDataForGrid(int startRow, int endRow, ref string commandStr)
         {
             DataTable resultDB = new DataTable();
 
@@ -42,19 +44,42 @@ namespace InfiniteScrolling
             return resultDB;
         }
 
+        
         private void InfiniteScrollingDialog_Load(object sender, EventArgs e)
         {
             string commandStr = string.Empty;
 
-            this.gridNote.DataSource = LoadMoreRows(1, 20, ref commandStr);
+            this.gridNote.DataSource = LoadDataForGrid(1, ThresholdRows, ref commandStr);
 
             //Configures to get more data
             this.gridNote.InfiniteScrollingConfigs = new InfiniteScrollingConfigs
             {
                 StoreProcedure = commandStr,
-                ConnetionString = connection.ConnectionString.ToString(),
-                MoreRowsCount = 10
+                ConnetionStringDefault = connection.ConnectionString.ToString(),
+                ArchivedConnetionString = connection.ConnectionString.ToString(),
+                MoreRowsCount = this.ThresholdRows,
+                MaxRowsFromBOSS = CountMaxRowsFromBOSS()
             };
+        }
+
+        private int CountMaxRowsFromBOSS()
+        {
+            int countRows;
+            string query = @"SELECT COUNT(*) CountRows FROM Note (NOLOCK)";
+            using (SqlConnection sqlConnection = new SqlConnection(connection.ConnectionString.ToString()))
+            {
+                sqlConnection.Open();
+
+                using (SqlCommand sqlCommand = new SqlCommand(query, sqlConnection))
+                {
+                    sqlCommand.CommandType = CommandType.Text;
+                    countRows = int.Parse(sqlCommand.ExecuteScalar().ToString());
+                }
+
+                sqlConnection.Close();
+            }
+
+            return countRows;
         }
     }
 }

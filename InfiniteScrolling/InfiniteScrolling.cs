@@ -1,12 +1,7 @@
 ﻿using Janus.Windows.GridEX;
 using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace InfiniteScrolling
 {
@@ -36,7 +31,24 @@ namespace InfiniteScrolling
                 int latestEndRow = (startRow + 1) * this.InfiniteScrollingConfigs.MoreRowsCount;
 
                 DataTable moreRows = new DataTable();
-                moreRows = LoadMoreRows(latestStartRow, latestEndRow);
+
+                if(totalRow <= this.InfiniteScrollingConfigs.MaxRowsFromBOSS)
+                {
+                    moreRows = LoadMoreRows(latestStartRow, latestEndRow, false);
+                    if(moreRows.Rows.Count < InfiniteScrollingConfigs.MoreRowsCount)
+                    {
+                        //get more data from sencond database if the result rows does not equal defined rows.
+                        DataTable moreRowsFromSecondDB = new DataTable();
+                        latestStartRow = moreRows.Rows.Count + 1;
+                        moreRowsFromSecondDB = LoadMoreRows(latestStartRow, latestEndRow, true);
+                        moreRows.Merge(moreRowsFromSecondDB);
+                    }
+                }
+                else
+                {
+                    moreRows = LoadMoreRows(latestStartRow, latestEndRow, true);
+                }
+                
                 this.DataSource.Merge(moreRows);
 
                 this.previousFirstDisplayedScrollingRowIndex = this.VerticalScrollPosition;
@@ -61,11 +73,11 @@ namespace InfiniteScrolling
 
         public virtual InfiniteScrollingConfigs InfiniteScrollingConfigs { get; set; }
 
-        public virtual DataTable LoadMoreRows(int startRow, int endRow)
+        public virtual DataTable LoadMoreRows(int startRow, int endRow, bool switchDB = false)
         {
             DataTable resultDB = new DataTable();
 
-            using (SqlConnection sqlConnection = new SqlConnection(InfiniteScrollingConfigs.ConnetionString))
+            using (SqlConnection sqlConnection = new SqlConnection(switchDB ? InfiniteScrollingConfigs.ArchivedConnetionString : InfiniteScrollingConfigs.ConnetionStringDefault))
             {
                 using (SqlCommand sqlCommand = new SqlCommand(InfiniteScrollingConfigs.StoreProcedure, sqlConnection))
                 {
@@ -88,12 +100,15 @@ namespace InfiniteScrolling
             return resultDB;
         }
 
+       
     }
 
     public class InfiniteScrollingConfigs
     {
         public string StoreProcedure { get; set; }
-        public string ConnetionString { get; set; }
+        public string ConnetionStringDefault { get; set; }
+        public string ArchivedConnetionString { get; set; }
         public int MoreRowsCount { get; set; }
+        public int MaxRowsFromBOSS { get; set; }
     }
 }
