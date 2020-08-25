@@ -8,7 +8,7 @@ namespace InfiniteScrolling
     public partial class InfiniteScrollingDialog : Form
     {
         SqlConnection connection = new SqlConnection("Data Source=172.16.1.30;Initial Catalog=BOSS_Development;User Id=boss_dev; Password=GoodDev!");
-        int ThresholdRows = 300; //It should get from config file
+        int ThresholdRows = 20; //It should get from config file
         
         public InfiniteScrollingDialog()
         {
@@ -19,7 +19,7 @@ namespace InfiniteScrolling
         {
             DataTable resultDB = new DataTable();
 
-            commandStr = "GetNoteList_TEST";
+            commandStr = "GetNoteList_TEST_1";
 
             using (SqlConnection sqlConnection = new SqlConnection(connection.ConnectionString.ToString()))
             {
@@ -65,7 +65,7 @@ namespace InfiniteScrolling
         private int CountMaxRowsFromBOSS()
         {
             int countRows;
-            string query = @"SELECT COUNT(*) CountRows FROM Note (NOLOCK)";
+            string query = @"SELECT COUNT(*) CountRows FROM Note n (NOLOCK) WHERE n.CreatedDate >= '8/20/2020'";
             using (SqlConnection sqlConnection = new SqlConnection(connection.ConnectionString.ToString()))
             {
                 sqlConnection.Open();

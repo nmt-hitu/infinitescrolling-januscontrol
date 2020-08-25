@@ -11,7 +11,11 @@ namespace InfiniteScrolling
         private int totalRow;
         private bool isBinding = false;
         private int latestStartRow = 0;
+
         private int startRow = 1;
+        private int latestStartRowSnapshot = 0;
+        private int newEndRow = 0;
+        private int newStartRow = 0;
         protected override void OnScroll(EventArgs e)
         {
             base.OnScroll(e);
@@ -27,32 +31,48 @@ namespace InfiniteScrolling
                 isBinding = true;
 
                 //Get more data
-                latestStartRow = (startRow * this.InfiniteScrollingConfigs.MoreRowsCount) + 1;
-                int latestEndRow = (startRow + 1) * this.InfiniteScrollingConfigs.MoreRowsCount;
+                latestStartRow = newStartRow > 0 ?
+                    newStartRow + 1
+                   : (startRow * this.InfiniteScrollingConfigs.MoreRowsCount) + 1;
+
+                int latestEndRow = newEndRow > 0 ?
+                    ((startRow + 1) * this.InfiniteScrollingConfigs.MoreRowsCount) - (newEndRow * startRow)
+                    : ((startRow + 1) * this.InfiniteScrollingConfigs.MoreRowsCount);
 
                 DataTable moreRows = new DataTable();
 
-                if(totalRow <= this.InfiniteScrollingConfigs.MaxRowsFromBOSS)
+                if (totalRow <= this.InfiniteScrollingConfigs.MaxRowsFromBOSS)
                 {
                     moreRows = LoadMoreRows(latestStartRow, latestEndRow, false);
-                    if(moreRows.Rows.Count < InfiniteScrollingConfigs.MoreRowsCount)
+
+                    if (moreRows.Rows.Count < InfiniteScrollingConfigs.MoreRowsCount)
                     {
                         //get more data from sencond database if the result rows does not equal defined rows.
                         DataTable moreRowsFromSecondDB = new DataTable();
-                        latestStartRow = moreRows.Rows.Count + 1;
-                        moreRowsFromSecondDB = LoadMoreRows(latestStartRow, latestEndRow, true);
+
+                        //Reset start and end row value for new database
+                        latestStartRowSnapshot = latestStartRow;
+                        startRow = 0;
+                        newEndRow = this.InfiniteScrollingConfigs.MoreRowsCount - moreRows.Rows.Count;
+                        
+                        //Set start value manually by the last row for the next scroll
+                        newStartRow = newEndRow;
+
+                        moreRowsFromSecondDB = LoadMoreRows(startRow, newEndRow, true);
                         moreRows.Merge(moreRowsFromSecondDB);
                     }
                 }
                 else
                 {
+                    //Set start value manually by the last row for the next scroll
+                    newStartRow = latestEndRow;
                     moreRows = LoadMoreRows(latestStartRow, latestEndRow, true);
                 }
-                
+
                 this.DataSource.Merge(moreRows);
 
                 this.previousFirstDisplayedScrollingRowIndex = this.VerticalScrollPosition;
-                this.VerticalScrollPosition = latestStartRow;
+                this.VerticalScrollPosition = latestStartRow == latestStartRowSnapshot ? latestStartRow : (latestStartRow + latestStartRowSnapshot);
                 this.startRow++;
 
                 isBinding = false;
@@ -73,7 +93,7 @@ namespace InfiniteScrolling
 
         public virtual InfiniteScrollingConfigs InfiniteScrollingConfigs { get; set; }
 
-        public virtual DataTable LoadMoreRows(int startRow, int endRow, bool switchDB = false)
+        public DataTable LoadMoreRows(int startRow, int endRow, bool switchDB = false)
         {
             DataTable resultDB = new DataTable();
 
@@ -99,8 +119,6 @@ namespace InfiniteScrolling
 
             return resultDB;
         }
-
-       
     }
 
     public class InfiniteScrollingConfigs
